@@ -1,6 +1,6 @@
 # Computational Analysis of Single-cell data
 
-Teaching material for the course Computational Analysis of Single-cell data 2023 (Saez-Rodriguez, Tanevski)
+Teaching material for the course Computational Analysis of Single-cell data 2023 (Saez-Rodriguez, Tanevski, Badia i Mompel)
 
 08.05.2023 - 10.05.2023 (10:00 - 16:00)
 
@@ -9,7 +9,7 @@ INF 267 BioQuant, CIP-Pool
 
 
 ## Technical requirements
-
+- Enviroment manager (conda or miniconda)
 - R version >= 4.2
 - Bioconductor version >= 3.15
 
