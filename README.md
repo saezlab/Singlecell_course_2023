@@ -6,6 +6,19 @@ Teaching material for the course Computational Analysis of Single-cell data 2023
 
 INF 267 BioQuant, CIP-Pool
 
+## Download
+To download, if you do not have `git` use this [link](https://github.com/saezlab/Singlecell_course_2023/archive/refs/heads/main.zip)
+
+Else, use these commands:
+```
+git clone https://github.com/saezlab/Singlecell_course_2023.git
+cd Singlecell_course_2023
+```
+
+If you already downloaded the repo and want to have the latest update, run this:
+```
+git pull --rebase
+```
 
 
 ## Technical requirements
