@@ -1,0 +1,108 @@
+---
+title: "Advanced analysis of structural and fuicntional spatial relationships"
+author: "Jovan Tanevski"
+date: "10.05.2023"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Setup
+
+Install Bioconductor and the required packages.
+
+```{r message=FALSE}
+library(mistyR)
+library(future)
+
+# data storage
+library(SpatialExperiment)
+
+# data manipulation
+library(Matrix)
+library(tidyverse)
+library(distances)
+
+# normalization
+library(sctransform)
+
+# resource
+library(decoupleR)
+library(TENxVisiumData)
+
+# plotting
+library(ggplot2)
+
+plan(multisession, workers = 4)
+```
+
+# MISTy
+
+## Part 1
+
+The goal of this practical is to get to know the workflow for inferring spatial relationships with MISTy.
+
+Start with the [vignette "Getting started"](https://saezlab.github.io/mistyR/articles/mistyR.html). Get familiar with the basic classes of functions used to construct a workflow.
+
+```{r}
+# space for your own work
+```
+
+## Part 2
+Analyse the human heart sample that you worked with in the previous practical. Start from the normalized data.
+
+```{r}
+spe <- HumanHeart()
+
+data.raw.counts <- counts(spe)
+symbols <- rowData(spe)[,"symbol"]
+rownames(data.raw.counts) <- symbols
+data.raw.counts.filtered <- data.raw.counts[(!duplicated(symbols) & rowSums(data.raw.counts) != 0), ]
+
+data.vst <- vst(data.raw.counts.filtered, verbosity = 1)$y
+data.geometry <- int_colData(spe)$spatialData[,c("array_row", "array_col")]
+
+```
+
+Instead of focusing on the top constituent genes of two pathways of interest as in the breast cancer example, here we are interested in the potential intra and intercellular pathway crostallks in the tissue. For this, as intraview representation of each spot, we will consider the estimated pathway activities in that spot. We will also consider adding a pathway activity paraview. The complete workflow, view generation, composition, modeling and result collection is given below.
+
+```{r message=FALSE, warning=FALSE}
+pry <- get_progeny(organism = "human", top = 100)
+pathway.activities <- run_wmean(mat=data.vst, net=pry, .source="source",
+                .target="target", .mor = "weight", minsize = 5) %>%
+  filter(statistic == "norm_wmean") %>%
+  pivot_wider(id_cols = "source", names_from = "condition",
+              values_from = "score") %>%
+  column_to_rownames('source') %>% t() %>% as.data.frame()
+colnames(pathway.activities) <- make.names(colnames(pathway.activities))
+
+misty.views <- create_initial_view(pathway.activities) %>% 
+  add_paraview(l = 3, data.geometry)
+
+run_misty(misty.views)
+
+misty.results <- collect_results("results")
+
+misty.results %>% plot_improvement_stats()
+misty.results %>% plot_interaction_heatmap("intra") %>% 
+  plot_interaction_heatmap("para.3", trim = 1)
+
+```
+
+Explore the results:
+
+-   Try changing the l parameter in the workflow to capture more local or more global interactions.
+
+-   Why are the targets trimmed to 1?
+
+-   PROGENy is a resource that is better suited for the analysis of pathway activities in cancer samples. Run the PROGENy informed MISTy pathway analysis on a cancer sample from the 10x collection. Explore the results and comment on them.
+
+
+## Part 3
+
+Follow up with an example of using MISTy with a [SpatialExperiment](https://saezlab.github.io/mistyR/articles/mistySpatialExperiment.html) object, connecting spatial and functional analyses.
+
+```{r}
+# space for your own work
+```
+
