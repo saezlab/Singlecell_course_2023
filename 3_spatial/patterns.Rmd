@@ -9,7 +9,12 @@ output:
 
 # Setup
 
-Install Bioconductor and the required packages.
+Install Bioconductor and the required packages. To install SPARK run the following command 
+
+```{r eval=FALSE}
+if(!require("remotes", quietly = TRUE)) install.packages("remotes") 
+remotes::install_github("xzhoulab/SPARK")
+```
 
 ```{r message=FALSE}
 library(TENxVisiumData)
@@ -26,7 +31,7 @@ library(scran)
 
 # Dataset
 
-One of the common formats for storing sptial data in R is `SpatialExperiment`. Familiarize yourself with the details of the storage object and how to access various aspects of the data.
+One of the common formats for storing spatial data in R is `SpatialExperiment`. Familiarize yourself with the details of the storage object and how to access various aspects of the data.
 
 First resource is the vignette of the package `SpatialExperiment`
 
@@ -86,8 +91,7 @@ Moran's I
 
 $$
 I = \frac{N}{W}\frac{\sum_{i=1}^N\sum_{j=1}^Nw_{ij}(x_i - \bar{x})(x_j - \bar{x})}{\sum_{i=1}^N(x_i - \bar{x})^2}
-$$
-Determine the neighborhood of each spot and the values of *w*. The lower and upper bounds of the distance between the spots considered as neighbors are currently set to 0 and 2. Play around with these values and observe the effect on the results below.
+$$ Determine the neighborhood of each spot and the values of *w*. The lower and upper bounds of the distance between the spots considered as neighbors are currently set to 0 and 2. Play around with these values and observe the effect on the results below.
 
 ```{r}
 neighbors <- dnearneigh(data.geometry %>% as.matrix(), 0, 2)
@@ -95,6 +99,7 @@ weights <- nb2listw(neighbors, style = "B")
 ```
 
 Calculate the global spatial autocorrelation for each of the highly variable genes by Moran's I. This might take a minute. Be patient.
+
 ```{r}
 moranI <- hvgs %>% 
   map_dfr(~tibble_row(gene = .x, 
@@ -102,8 +107,6 @@ moranI <- hvgs %>%
           .progress = TRUE)
 
 ```
-
-
 
 ### Local spatial autocorrelation
 
@@ -149,11 +152,11 @@ enrich.spark %>% arrange(p_value)
 
 ```
 
-Can we claim that the some of the hallmark states or processes show spatial patterns? Why not? What type of analysis would support such a claim? 
+Can we claim that the some of the hallmark states or processes show spatial patterns? Why not? What type of analysis would support such a claim?
 
 # Further work
 
--   Following the SPARK example, enrich the results obtained by calculating Moran's I (and Geary's C). Be careful! The values of Moran's I and Geary's C are on different ranges ([-1, 1] vs [0, Inf]) and have a different meaning. What are the differences in the result of the enrichment? 
+-   Following the SPARK example, enrich the results obtained by calculating Moran's I (and Geary's C). Be careful! The values of Moran's I and Geary's C are on different ranges ([-1, 1] vs [0, Inf]) and have a different meaning. What are the differences in the result of the enrichment?
 
 -   Try enrichment per individual spark kernel scores (Hint: `spark.patterns$stats` or `spark.patterns$res_stest`).
 
@@ -161,7 +164,7 @@ Can we claim that the some of the hallmark states or processes show spatial patt
 
 -   Are genes with significant spatial patterns co-localized? Visualize or try to quantify.
 
--   Try running the same analysis on a cancer sample. Where and what are the differences? 
+-   Try running the same analysis on a cancer sample. Where and what are the differences?
 
 ```{r}
 
@@ -170,4 +173,3 @@ Can we claim that the some of the hallmark states or processes show spatial patt
 
 
 ```
-
