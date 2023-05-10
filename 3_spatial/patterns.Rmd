@@ -14,6 +14,8 @@ Install Bioconductor and the required packages. To install SPARK run the followi
 ```{r eval=FALSE}
 if(!require("remotes", quietly = TRUE)) install.packages("remotes") 
 remotes::install_github("xzhoulab/SPARK")
+
+BiocManager::install(c("TENxVisiumData", "ggspavis", ...))
 ```
 
 ```{r message=FALSE}
@@ -141,14 +143,12 @@ Once we have quantified in different ways the spatial patterns of expression of 
 ```{r}
 msigdb <- get_resource("MSigDB")
 
-
-enrich.spark <- run_ora(1 - spark.patterns$res_mtest %>% select(adjustedPval) %>% 
-                   as.matrix(), 
+enrich.moran <- run_ora(moranI %>% column_to_rownames("gene"), 
                  msigdb %>% filter(collection == "hallmark") %>% 
                    select(-uniprot) %>% distinct(), 
                  .source="geneset", .target="genesymbol")
 
-enrich.spark %>% arrange(p_value)
+enrich.moran %>% arrange(p_value)
 
 ```
 
@@ -156,7 +156,8 @@ Can we claim that the some of the hallmark states or processes show spatial patt
 
 # Further work
 
--   Following the SPARK example, enrich the results obtained by calculating Moran's I (and Geary's C). Be careful! The values of Moran's I and Geary's C are on different ranges ([-1, 1] vs [0, Inf]) and have a different meaning. What are the differences in the result of the enrichment?
+-   Following the Moran's I example, enrich the results obtained by SPARK (`1 - spark.patterns$res_mtest %>% select(adjustedPval) %>% 
+                   as.matrix()`) and Geary's C (`moranI %>% column_to_rownames("gene")`). Be careful! The values of Moran's I and Geary's C are on different ranges ([-1, 1] vs [0, Inf]) and have a different meaning. The SPARK values are adjusted p-values. What are the differences in the result of the enrichment?
 
 -   Try enrichment per individual spark kernel scores (Hint: `spark.patterns$stats` or `spark.patterns$res_stest`).
 
